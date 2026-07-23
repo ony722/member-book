@@ -43,5 +43,5 @@ dist/assets/index-ChEp7gNY.js  44.60 kB │ gzip: 10.82 kB
 - バンドルサイズ実測: 44.60KB（gzip 10.82KB）
 
 ## 未検証事項（Round1レビュー指摘F-C5で判明した残課題）
-- 本プロジェクトが公式サポート宣言する下限環境（Node 20 LTS、TypeScript 5系）そのものでの検証は未実施（今回はNode v25/TS6という最新版環境でのみ検証）
-- **Phase 6実装着手前のTODO**: GitHub Actions CI（`actions/setup-node@v4`でNode 20 LTSを指定）上で本検証と同じ手順（`npm install` → `npm run build`）を実行し成功することを確認する。これをTEST_PLAN.md 6章Entry Criteriaに追加済み
+- 本プロジェクトが当初公式サポート宣言していた下限環境（Node 20 LTS、TypeScript 5系）そのものでの検証は未実施のままPhase 6を完了していた（今回はNode v25/TS6という最新版環境でのみ検証）
+- **Phase 8実地検証で判明（2026-07-23）**: GitHub ActionsのCIをNode 20で実行したところ `node: bad option: --experimental-strip-types` で`validate:members`ステップが失敗した。一次ソース（nodejs.org / nodejs/Release README）を確認した結果、Node 20は2026-04-30に既にEOL（Maintenance LTS終了）しており、かつ`--experimental-strip-types`はNode 22.6.0で導入されたフラグであるため、Node 20では原理的に動作しないことが分かった。CIおよび`package.json`の`engines`をNode 22.6以上（2026年7月時点でMaintenance LTS、2027-04-30までサポート）に変更して解消した（`.github/workflows/deploy.yml`、`docs/SDD.md`参照）

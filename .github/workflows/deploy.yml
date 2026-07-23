@@ -24,10 +24,12 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      # Round1レビュー指摘F-C5対応: Node 20 LTSでの実地検証
+      # Phase 8実地検証(2026-07-23)で判明: Node 20はEOL(2026-04-30)済みかつ
+      # scripts/validate-members.ts が使う --experimental-strip-types はNode 22.6+が必要なため、
+      # Maintenance LTSであるNode 22を採用する（research/feasibility_log.md参照）
       - uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: '22'
           cache: 'npm'
 
       - run: npm ci

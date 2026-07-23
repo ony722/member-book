@@ -144,7 +144,7 @@ members.json（リポジトリ管理・信頼できる入力源）
 
 ### 実行環境
 
-- ビルド環境: Node.js 20 LTS以上（実地検証はNode v25で実施、20 LTS以上を公式サポート範囲とする）
+- ビルド環境: Node.js 22.6以上（Maintenance LTS。`scripts/validate-members.ts`が使う`node --experimental-strip-types`がNode 22.6で導入されたための下限。Node 20はPhase 8のCI実地検証で「EOL済み(2026-04-30)かつ当該フラグ非対応」と判明し不採用に変更した。実地検証はNode v25で実施、CI(GitHub Actions)はNode 22で運用）
 - ブラウザ実行環境: モダンブラウザ（NFR-COMP-001準拠）、サーバーサイドランタイムなし
 
 ### デプロイ方法

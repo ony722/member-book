@@ -47,9 +47,9 @@
 ## 6. Entry Criteria（テスト開始条件）
 - [x] SDD の設計完了（本ドキュメント作成時点）
 - [ ] テスト対象コードがビルド可能（`npm run build`成功）
-- [ ] テスト環境構築済み（Node 20+、Vitest、Playwright インストール済み）
+- [ ] テスト環境構築済み（Node 22.6+、Vitest、Playwright インストール済み）
 - [ ] テストデータ（サンプル`members.json` 20〜100件）準備済み
-- [ ] GitHub Actions CI（Node 20 LTS）上で`page-flip`のインストール・ビルドが成功することを確認済み（Round1レビュー指摘F-C5対応：Phase 1の実地検証はNode v25で実施したため、公式サポート宣言の下限環境での再検証が必要。research/feasibility_log.md参照）
+- [x] GitHub Actions CI（Node 22 LTS）上で`page-flip`のインストール・ビルドが成功することを確認済み（Round1レビュー指摘F-C5対応。Phase 8実地検証でNode 20はEOL済み・`--experimental-strip-types`非対応と判明したためNode 22へ変更。research/feasibility_log.md参照）
 
 ## 7. Exit Criteria（テスト終了条件）
 - [ ] 全Must機能要件（FR-SYS-001,002,003,004,007,010／FR-DATA-001／FR-EXT-001）のテストがPASS
