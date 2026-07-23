@@ -40,8 +40,10 @@ jobs:
       - run: npm run build # S4
       - run: npm audit --production # S6
 
+      # playwright.config.ts の mobile プロジェクトは devices['iPhone SE']（WebKitエンジン）を使うため、
+      # chromiumだけでなくwebkitも必要（初回CI実行でwebkit未インストールによる失敗を確認して修正）
       - name: Install Playwright browsers
-        run: npx playwright install --with-deps chromium
+        run: npx playwright install --with-deps chromium webkit
 
       - name: Run E2E tests
         run: npx playwright test # S5
