@@ -1,0 +1,61 @@
+name: Build, Test & Deploy (GitHub Pages)
+
+# ADR-004: GitHub Pages + GitHub Actions による自動デプロイ
+# TEST_PLAN.md 決定論的センサー S1〜S6 を CI ゲートとして実行し、全て緑になった場合のみデプロイする
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      # Round1レビュー指摘F-C5対応: Node 20 LTSでの実地検証
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - run: npm ci
+      - run: npm run validate:members # FR-DATA-001: 会員データのビルド時検証（S4の前段）
+      - run: npm run typecheck # S2
+      - run: npm run lint # S3
+      - run: npm run test:coverage # S1
+      - run: npm run build # S4
+      - run: npm audit --production # S6
+
+      - name: Install Playwright browsers
+        run: npx playwright install --with-deps chromium
+
+      - name: Run E2E tests
+        run: npx playwright test # S5
+
+      - uses: actions/upload-pages-artifact@v3
+        if: github.ref == 'refs/heads/main'
+        with:
+          path: dist
+
+  deploy:
+    if: github.ref == 'refs/heads/main'
+    needs: build-and-test
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4

@@ -1,0 +1,153 @@
+/* FR-SYS-010: レスポンシブ対応。横スクロールを発生させない設計（ACC-FR-SYS-010） */
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+  overflow-x: hidden;
+  max-width: 100%;
+  font-family: 'Hiragino Sans', 'Yu Gothic', 'Noto Sans JP', sans-serif;
+  background: #f4efe6;
+  color: #2b2620;
+}
+
+#app {
+  max-width: 100%;
+}
+
+.mb-app {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  padding: 16px;
+  max-width: 100%;
+}
+
+/*
+ * 高さ・幅の両方をビューポート基準で明示的に制限する（aspect-ratioだけに頼らない）。
+ * page-flip の size:'stretch' はこのボックスの実測サイズを基準に、
+ * 内部でページの縦横比を保ったまま最大サイズへ自動フィットする。
+ * 実機スクリーンショット確認で、aspect-ratioのみで高さを算出すると
+ * デスクトップの一般的なビューポートで縦にはみ出す不具合を発見し、この方式に修正した。
+ */
+.mb-flipbook {
+  width: min(900px, 92vw);
+  height: min(640px, 68vh);
+  position: relative;
+  overflow: hidden;
+}
+
+.mb-flipbook .page {
+  background: #fffdf8;
+  border: 1px solid #d8cfbe;
+  padding: 24px 20px;
+  overflow-y: auto;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
+}
+
+.mb-controls {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.mb-btn {
+  padding: 8px 16px;
+  border: 1px solid #b8a98a;
+  background: #fffdf8;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+.mb-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.mb-indicator {
+  font-size: 14px;
+  min-width: 4em;
+  text-align: center;
+}
+
+.mb-cover {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+}
+
+.mb-cover__title {
+  font-size: 1.6em;
+}
+
+.mb-toc__list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.mb-toc__list li {
+  padding: 6px 0;
+  border-bottom: 1px dashed #d8cfbe;
+}
+
+.mb-toc__link {
+  color: #6a4e2c;
+  text-decoration: none;
+}
+
+.mb-toc__link:hover {
+  text-decoration: underline;
+}
+
+.mb-member__name {
+  margin-top: 0;
+}
+
+.mb-member__bio {
+  white-space: pre-wrap;
+  line-height: 1.6;
+}
+
+.mb-member__links {
+  list-style: none;
+  padding: 0;
+}
+
+.mb-link {
+  color: #2a6f97;
+}
+
+.mb-member__back {
+  display: inline-block;
+  margin-top: 16px;
+  font-size: 0.9em;
+  color: #6a4e2c;
+}
+
+.mb-error {
+  padding: 24px;
+  text-align: center;
+  color: #a33;
+}
+
+@media (max-width: 480px) {
+  .mb-flipbook {
+    height: min(560px, 62vh);
+  }
+
+  .mb-flipbook .page {
+    padding: 16px 12px;
+  }
+}
