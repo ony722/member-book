@@ -4,7 +4,7 @@
 - プロジェクト名: メンバーブック（漫画ページめくり風・会員紹介サイト）
 - 目的(1文): 紙のメンバーブックをめくる体験をWebで再現し、会員を1人1ページ（文字＋リンク）で紹介する静的サイトを提供する
 - 技術スタック: TypeScript + Vite（vanilla、フレームワークなし） / `page-flip`(StPageFlip core, MIT) / Vitest / Playwright / GitHub Pages
-- 現在フェーズ: Phase 7完了 → Phase 8（本番移行判断）待ち。DoD/残課題は PROGRESS.md 参照
+- 現在フェーズ: Phase 8完了 — GitHub Pagesへデプロイ済み（https://ony722.github.io/member-book/ 、サンプルデータのみ）。実データ投入はRISK-006/007対応後。詳細は PROGRESS.md 参照
 - 現在セッション: 1
 
 ## PART B: 完了基準 (Definition of Done)

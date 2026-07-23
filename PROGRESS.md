@@ -1,6 +1,25 @@
 # PROGRESS.md — メンバーブック
 
-## 現在フェーズ: Phase 7（検証）完了 → Phase 8（本番移行判断）
+## 現在フェーズ: Phase 8（本番移行）— GitHub Pagesへのデプロイ完了
+
+- リポジトリ: https://github.com/ony722/member-book （public）
+- 公開URL: https://ony722.github.io/member-book/
+- デプロイ方式: GitHub Actions（`.github/workflows/deploy.yml`）、`main`へのpushで自動ビルド・E2E・デプロイ
+- 最終確認: 実URLへPlaywrightでアクセスし、表紙・目次見開き（会員24件・目次1/3,2/3表示）が正常表示されることを確認済み（2026-07-23）
+
+### デプロイ時に発見・修正した不具合（Phase 8実地検証）
+
+CI環境で初めて顕在化した問題が3件あり、いずれもローカル開発環境だけでは気づけなかった。
+
+| # | 問題 | 原因 | 対応 |
+|---|---|---|---|
+| 1 | `validate:members`がCIで失敗 | Node 20は2026-04-30にEOL済み、かつ`--experimental-strip-types`はNode 22.6+が必要 | CI/`package.json engines`をNode 22.6+に変更（一次ソース: nodejs.org, nodejs/Release README） |
+| 2 | モバイル(WebKit)向けE2Eが全滅 | CIのPlaywrightブラウザインストールがchromiumのみでwebkit未インストール | `npx playwright install --with-deps chromium webkit`に修正 |
+| 3 | E2E-01/06がCI×WebKitで断続的にtimeout | page-flipの影エフェクト要素(`.stf__outerShadow`)がクリックを妨害／アニメーション完了前に次操作していた | `pointer-events: none`を影要素に付与（実装バグとして修正）、E2Eをページ番号変化ベースの待機に統一 |
+
+いずれも「ローカルでは全PASS、CIで初めて失敗」というパターンであり、本番相当環境（CI）での実行確認の重要性を再確認した。
+
+## Phase 7（検証）完了時点の記録
 
 最終更新: 2026-07-23 / セッション: 1（50往復ルール内で完了）
 
