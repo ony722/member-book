@@ -42,6 +42,19 @@ body {
   overflow: hidden;
 }
 
+/*
+ * page-flip が描画する影エフェクト要素（stf__outerShadow等）は視覚効果のみが目的で、
+ * クリック/タップを受け取るべきではない。CI(低速環境)でのE2E実行で、影要素が
+ * リンク/目次項目へのクリックをブロックする実バグを検出したため明示的に無効化する。
+ * （ユーザーの実操作でも、影が残っている間はリンクが反応しない可能性があった）
+ */
+.stf__outerShadow,
+.stf__innerShadow,
+.stf__hardShadow,
+.stf__hardInnerShadow {
+  pointer-events: none;
+}
+
 .mb-flipbook .page {
   background: #fffdf8;
   border: 1px solid #d8cfbe;
