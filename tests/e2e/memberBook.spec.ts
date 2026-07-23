@@ -4,7 +4,7 @@
 // （タブレット/ブック演出のため）。そのため `.mb-member__name` 等のクラスセレクタは
 // 常に全ページ分（例: 会員24件なら24個）マッチする。可視ページのみを対象にするため
 // Playwrightの `:visible` 擬似クラスで必ず絞り込む。
-import { test, expect } from '@playwright/test';
+import { test, expect, type Page } from '@playwright/test';
 import { execFile } from 'node:child_process';
 import { mkdtempSync, writeFileSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
@@ -12,6 +12,18 @@ import { join } from 'node:path';
 import { promisify } from 'node:util';
 
 const execFileAsync = promisify(execFile);
+
+/**
+ * page-flip のめくりアニメーション完了を「決め打ちtimeout」ではなく状態変化で待つ。
+ * CI（低速環境）×WebKit(モバイル)では、クリック直後の要素がアニメーション中で
+ * actionability チェックに失敗しやすいことが判明したため、クリックを行う関数と
+ * ページ番号インジケータの変化を待つ処理を1セットにして呼び出し側の取りこぼしを防ぐ。
+ */
+async function clickAndWaitForPageChange(page: Page, click: () => Promise<void>): Promise<void> {
+  const before = await page.locator('#pageIndicator').textContent();
+  await click();
+  await expect(page.locator('#pageIndicator')).not.toHaveText(before ?? '', { timeout: 5000 });
+}
 
 test.describe('E2E-01: 標準的な閲覧フロー（正常系1）', () => {
   test('表紙→目次→会員ページ→次へ→外部リンクの一連の操作ができる', async ({ page, context }) => {
@@ -32,18 +44,19 @@ test.describe('E2E-01: 標準的な閲覧フロー（正常系1）', () => {
     // 目次の先頭ページまで#nextBtnで確実に戻す（クリックめくりの到達ページはドラッグ量依存のため決定論的にしない）
     for (let i = 0; i < 3; i++) {
       if (await page.locator('.mb-toc__title:visible').first().isVisible().catch(() => false)) break;
-      await page.locator('#nextBtn').click();
+      await clickAndWaitForPageChange(page, () => page.locator('#nextBtn').click());
     }
     await expect(page.locator('.mb-toc__title:visible').first()).toBeVisible({ timeout: 5000 });
 
     // 目次で可視の会員名（先頭）をクリック
     const visibleLink = page.locator('.mb-toc__link:visible').first();
     const memberName = await visibleLink.textContent();
-    await visibleLink.click();
-    await expect(page.locator('.mb-member__name:visible')).toContainText(memberName ?? '');
+    await clickAndWaitForPageChange(page, () => visibleLink.click());
+    await expect(page.locator('.mb-member__name:visible')).toContainText(memberName ?? '', { timeout: 10000 });
 
-    // 次へボタンで1ページ送る
-    await page.locator('#nextBtn').click();
+    // 次へボタンで1ページ送る（CI×WebKitではアニメーション完了前に次操作すると要素が不安定になるため、
+    // ページ番号の変化をもって完了とみなす）
+    await clickAndWaitForPageChange(page, () => page.locator('#nextBtn').click());
 
     // リンクをクリックして新規タブが開く
     const linkLocator = page.locator('.mb-link:visible').first();
@@ -67,16 +80,17 @@ test.describe('E2E-02: 最小構成相当（境界: 先頭/最終ページのボ
 test.describe('E2E-03: 目次から会員ページへのジャンプ（正常系3）', () => {
   test('目次から任意の会員ページへ直接ジャンプできる', async ({ page }) => {
     await page.goto('/');
-    await page.locator('#nextBtn').click();
+    await clickAndWaitForPageChange(page, () => page.locator('#nextBtn').click());
     await expect(page.locator('.mb-toc__title:visible').first()).toBeVisible();
 
     const link = page.locator('.mb-toc__link:visible').last();
     const name = await link.textContent();
-    await link.click();
+    await clickAndWaitForPageChange(page, () => link.click());
 
     // page-flipはジャンプ先の見開き(複数ページ)を同時に表示するため、対象名で絞り込んでから可視性を確認する
+    // CI×WebKitでは見開きジャンプのアニメーションに時間がかかることがあるためタイムアウトを延長する
     await expect(page.locator('.mb-member__name:visible', { hasText: name ?? '' }).first()).toBeVisible({
-      timeout: 5000,
+      timeout: 10000,
     });
   });
 });
@@ -135,17 +149,18 @@ test.describe('E2E-06: 境界値（bio空文字・links0件）での表示崩れ
     for (let i = 0; i < 5 && !found; i++) {
       const link = page.locator('.mb-toc__link:visible', { hasText: 'リンクなし花子' }).first();
       if ((await link.count()) > 0) {
-        await link.click();
+        await clickAndWaitForPageChange(page, () => link.click());
         found = true;
       } else {
-        await page.locator('#nextBtn').click();
+        await clickAndWaitForPageChange(page, () => page.locator('#nextBtn').click());
       }
     }
     expect(found).toBe(true);
 
     // page-flipはジャンプ先の見開き(複数ページ)を同時に表示するため、対象会員のページ(.mb-member)単位で絞り込む
+    // CI×WebKitでは見開きジャンプのアニメーションに時間がかかることがあるためタイムアウトを延長する
     const targetPage = page.locator('.mb-member:visible', { hasText: 'リンクなし花子' }).first();
-    await expect(targetPage.locator('.mb-member__name')).toHaveText('リンクなし花子');
+    await expect(targetPage.locator('.mb-member__name')).toHaveText('リンクなし花子', { timeout: 10000 });
     await expect(targetPage.locator('.mb-member__bio')).toHaveText('');
     await expect(targetPage.locator('.mb-member__links')).toHaveCount(0);
 
